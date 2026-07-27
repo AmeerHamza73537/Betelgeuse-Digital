@@ -8,7 +8,6 @@ The application intentionally keeps a small structure:
 - `app/page.js` contains the page and its interactions
 - `app/globals.css` contains the complete visual system
 - `app/layout.js` contains site metadata
-- `worker/index.js` is the small hosting adapter
 
 ## Run locally
 
@@ -22,3 +21,6 @@ npm run dev
 ```bash
 npm run build
 ```
+
+The production build uses standard Next.js output and deploys directly to
+Vercel without a custom output-directory setting.
