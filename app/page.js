@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 const services = [
   {
@@ -8,18 +8,21 @@ const services = [
     title: "Paid growth",
     text: "Focused campaigns that turn attention into qualified demand and profitable growth.",
     tags: ["Google Ads", "Meta Ads", "Creative testing"],
+    signal: "Reach → Revenue",
   },
   {
     number: "02",
     title: "Web experiences",
     text: "Fast, thoughtful websites built around your customer journey and commercial goals.",
     tags: ["Next.js", "Shopify", "Custom builds"],
+    signal: "Click → Customer",
   },
   {
     number: "03",
     title: "Agentic AI",
-    text: "Useful AI agents and automations that remove busywork from your team.",
+    text: "Useful AI agents and automations that remove busywork and make your team faster.",
     tags: ["AI agents", "Automation", "Integrations"],
+    signal: "Task → System",
   },
 ];
 
@@ -92,12 +95,89 @@ function Brand() {
   );
 }
 
+function TiltCard({ className = "", children }) {
+  function moveCard(event) {
+    if (event.pointerType === "touch") return;
+
+    const card = event.currentTarget;
+    const bounds = card.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width;
+    const y = (event.clientY - bounds.top) / bounds.height;
+
+    card.style.setProperty("--rotate-x", `${(0.5 - y) * 8}deg`);
+    card.style.setProperty("--rotate-y", `${(x - 0.5) * 8}deg`);
+    card.style.setProperty("--pointer-x", `${x * 100}%`);
+    card.style.setProperty("--pointer-y", `${y * 100}%`);
+  }
+
+  function resetCard(event) {
+    event.currentTarget.style.setProperty("--rotate-x", "0deg");
+    event.currentTarget.style.setProperty("--rotate-y", "0deg");
+  }
+
+  return (
+    <article
+      className={`tilt-card ${className}`}
+      onPointerMove={moveCard}
+      onPointerLeave={resetCard}
+    >
+      <span className="tilt-shine" aria-hidden="true" />
+      {children}
+    </article>
+  );
+}
+
+function subscribeToTheme(callback) {
+  window.addEventListener("betelgeuse-theme-change", callback);
+  return () => window.removeEventListener("betelgeuse-theme-change", callback);
+}
+
+function getThemeSnapshot() {
+  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+}
+
+function getServerThemeSnapshot() {
+  return "light";
+}
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [testimonial, setTestimonial] = useState(0);
+  const theme = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerThemeSnapshot,
+  );
+
+  function toggleTheme() {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    document.documentElement.dataset.theme = nextTheme;
+    try {
+      localStorage.setItem("betelgeuse-theme", nextTheme);
+    } catch {
+      // The theme still changes when storage is unavailable.
+    }
+    window.dispatchEvent(new Event("betelgeuse-theme-change"));
+  }
 
   function closeMenu() {
     setMenuOpen(false);
+  }
+
+  function moveHero(event) {
+    if (event.pointerType === "touch") return;
+
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width;
+    const y = (event.clientY - bounds.top) / bounds.height;
+
+    event.currentTarget.style.setProperty("--hero-x", `${(0.5 - y) * 5}deg`);
+    event.currentTarget.style.setProperty("--hero-y", `${(x - 0.5) * 7}deg`);
+  }
+
+  function resetHero(event) {
+    event.currentTarget.style.setProperty("--hero-x", "0deg");
+    event.currentTarget.style.setProperty("--hero-y", "0deg");
   }
 
   function sendInquiry(event) {
@@ -147,53 +227,98 @@ export default function Home() {
           </a>
         </nav>
 
-        <a className="button button-small header-cta" href="#contact">
-          Start a project <span aria-hidden="true">↗</span>
-        </a>
+        <div className="header-actions">
+          <a className="button button-small header-cta" href="#contact">
+            Start a project <span aria-hidden="true">↗</span>
+          </a>
 
-        <button
-          className={menuOpen ? "menu-button is-open" : "menu-button"}
-          type="button"
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          <span />
-          <span />
-        </button>
+          <button
+            className="theme-toggle"
+            type="button"
+            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+            aria-pressed={theme === "dark"}
+            onClick={toggleTheme}
+          >
+            <span className="theme-track" aria-hidden="true">
+              <span className="theme-thumb">
+                <span className="sun-symbol">☀</span>
+                <span className="moon-symbol">◐</span>
+              </span>
+            </span>
+            <span className="theme-label">{theme === "light" ? "Light" : "Dark"}</span>
+          </button>
+
+          <button
+            className={menuOpen ? "menu-button is-open" : "menu-button"}
+            type="button"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <span />
+            <span />
+          </button>
+        </div>
       </header>
 
-      <section className="hero">
+      <section
+        className="hero"
+        onPointerMove={moveHero}
+        onPointerLeave={resetHero}
+      >
         <div className="hero-copy">
           <p className="eyebrow">
             <span />
             Strategy · Systems · Scale
           </p>
           <h1>
-            Ideas that create <em>momentum.</em>
+            Turn attention into <em>measurable momentum.</em>
           </h1>
           <p className="hero-intro">
-            We build the campaigns, digital products, and AI systems that move
-            ambitious businesses forward.
+            We connect paid growth, high-converting web experiences, and useful
+            AI systems to help ambitious businesses move faster.
           </p>
           <div className="hero-actions">
             <a className="button button-primary" href="#contact">
-              Tell us what you’re building <span aria-hidden="true">↗</span>
+              Book a growth conversation <span aria-hidden="true">↗</span>
             </a>
             <a className="text-link" href="#services">
-              Explore our work <span aria-hidden="true">↓</span>
+              See what we build <span aria-hidden="true">↓</span>
             </a>
+          </div>
+          <div className="hero-trust" aria-label="What clients can expect">
+            <span>Senior team</span>
+            <span>Clear milestones</span>
+            <span>Commercial focus</span>
           </div>
         </div>
 
-        <div className="star-scene" aria-hidden="true">
+        <div className="hero-stage" aria-hidden="true">
+          <div className="stage-grid" />
           <div className="star-glow" />
           <div className="orbit orbit-one" />
           <div className="orbit orbit-two" />
           <div className="star">
             <span />
           </div>
-          <p>α ORI · RED SUPERGIANT</p>
+
+          <div className="signal-card signal-card-one">
+            <span>Campaign velocity</span>
+            <strong>+38%</strong>
+            <i />
+          </div>
+          <div className="signal-card signal-card-two">
+            <span>Conversion signal</span>
+            <strong>2.4×</strong>
+            <i />
+          </div>
+          <div className="signal-card signal-card-three">
+            <span>Hours returned</span>
+            <strong>18 / wk</strong>
+            <i />
+          </div>
+
+          <p className="star-label">α ORI · RED SUPERGIANT</p>
         </div>
 
         <div className="hero-note">
@@ -234,10 +359,10 @@ export default function Home() {
 
         <div className="service-grid">
           {services.map((service) => (
-            <article className="service-card" key={service.title}>
+            <TiltCard className="service-card" key={service.title}>
               <div className="card-top">
                 <span>{service.number}</span>
-                <span aria-hidden="true">↗</span>
+                <span>{service.signal}</span>
               </div>
               <div className={`service-icon icon-${service.number}`}>
                 <span />
@@ -249,7 +374,10 @@ export default function Home() {
                   <li key={tag}>{tag}</li>
                 ))}
               </ul>
-            </article>
+              <span className="card-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </TiltCard>
           ))}
         </div>
       </section>
@@ -278,6 +406,9 @@ export default function Home() {
                 <h3>{value.title}</h3>
                 <p>{value.text}</p>
               </div>
+              <span className="value-arrow" aria-hidden="true">
+                ↗
+              </span>
             </article>
           ))}
         </div>
@@ -298,7 +429,10 @@ export default function Home() {
 
         <div className="project-grid">
           {projects.map((project, index) => (
-            <article className={`project project-${index + 1}`} key={project.title}>
+            <TiltCard
+              className={`project project-${index + 1}`}
+              key={project.title}
+            >
               <div className="project-visual">
                 <span className="project-line" />
                 <div>
@@ -308,7 +442,10 @@ export default function Home() {
               </div>
               <p>{project.kind}</p>
               <h3>{project.title}</h3>
-            </article>
+              <span className="project-link">
+                View the thinking <span aria-hidden="true">↗</span>
+              </span>
+            </TiltCard>
           ))}
         </div>
       </section>
@@ -352,6 +489,9 @@ export default function Home() {
       </section>
 
       <section className="contact" id="contact">
+        <div className="contact-orbit" aria-hidden="true">
+          <span />
+        </div>
         <div className="contact-copy">
           <p className="eyebrow">
             <span />
