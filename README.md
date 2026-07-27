@@ -1,26 +1,23 @@
 # Betelgeuse Digital
 
-A premium single-page landing website for Betelgeuse Digital, a digital agency
-focused on paid growth, web development, and agentic AI.
+A simple JavaScript Next.js site for a digital agency focused on paid growth,
+web experiences, and practical AI systems.
 
-## Highlights
+The application intentionally keeps a small structure:
 
-- Responsive dark editorial design with a warm Betelgeuse-inspired palette
-- Animated 3D hero star with reduced-motion support
-- Sequenced scroll reveals and subtle service-card tilt interactions
-- Services, process, case studies, testimonials, and inquiry sections
-- Accessible mobile navigation and email-based contact form
+- `app/page.js` contains the page and its interactions
+- `app/globals.css` contains the complete visual system
+- `app/layout.js` contains site metadata
+- `worker/index.js` is the small hosting adapter
 
-## Local development
+## Run locally
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-## Production build
+## Build
 
 ```bash
 npm run build
